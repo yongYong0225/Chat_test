@@ -1,8 +1,12 @@
 package com.sparta.test.controller;
 
 import com.sparta.test.Dto.ChatRoom;
+import com.sparta.test.Dto.LoginInfo;
 import com.sparta.test.repository.ChatRoomRepository;
+import com.sparta.test.service.JwtTokenProvider;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -16,6 +20,7 @@ import java.util.Collection;
 public class ChatRoomController {
 
     private final com.sparta.test.repository.ChatRoomRepository chatRoomRepository;
+    private final JwtTokenProvider jwtTokenProvider;
     // 채팅 리스트 화면
     @GetMapping("/room")
     public String rooms(Model model) {
@@ -44,6 +49,14 @@ public class ChatRoomController {
     @ResponseBody
     public ChatRoom roomInfo(@PathVariable String roomId) {
         return chatRoomRepository.findRoomById(roomId);
+    }
+
+    @GetMapping("/user")
+    @ResponseBody
+    public LoginInfo getUserInfo() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        String name = auth.getName();
+        return LoginInfo.builder().name(name).token(jwtTokenProvider.generateToken(name)).build();
     }
 }
 
